@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package sensor;
+
+// The gRPC service for handling IoT sensor data.
+service SensorService {
+  // Collects sensor data from IoT devices.
+  rpc CollectSensorData (SensorData) returns (Response);
+  // Retrieves a summary of stored data.
+  rpc GetSensorSummary (Empty) returns (SensorSummary);
+}
+
+// Sensor data message.
+message SensorData {
+  string device_id = 1;
+  string timestamp = 2;
+  float temperature = 3;
+  float humidity = 4;
+}
+
+// Response message.
+message Response {
+  string message = 1;
+}
+
+// Empty message (used for requests that don't need parameters).
+message Empty {}
+
+// Sensor summary message.
+message SensorSummary {
+  int32 total_devices = 1;
+  float avg_temperature = 2;
+  float avg_humidity = 3;
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+service SensorGateway {
+  rpc SendSensorData (SensorData) returns (Acknowledgment);
+}
+
+message SensorData {
+  string device_id = 1;
+  string timestamp = 2;
+  string sensor_type = 3;
+  float value = 4;
+}
+
+message Acknowledgment {
+  string status = 1;
+  string message = 2;
+}
