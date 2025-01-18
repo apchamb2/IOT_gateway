@@ -2,13 +2,19 @@
 A gRPC server that receives sensor data from gRPC clients and stores it in MongoDB.
 """
 
-import grpc
+import grpc, json
 from concurrent import futures
 import sensor_pb2
 import sensor_pb2_grpc
 
 # MongoDB driver
 from pymongo import MongoClient
+
+# Kafka Message Sending Package
+from kafka import KafkaProducer
+
+producer = KafkaProducer(bootstrap_servers='localhost:9092')
+
 
 class SensorService(sensor_pb2_grpc.SensorServiceServicer):
     """
@@ -21,7 +27,8 @@ class SensorService(sensor_pb2_grpc.SensorServiceServicer):
         self.client = MongoClient("mongodb://localhost:27017/")
         self.db = self.client["iot_db"]
         self.collection = self.db["sensor_data"]
-
+        self.producer = producer
+        
     def SendSensorData(self, request, context):
         """
         Receives sensor data from the client and stores it in MongoDB.
@@ -36,6 +43,13 @@ class SensorService(sensor_pb2_grpc.SensorServiceServicer):
 
         # Insert the record into MongoDB
         insert_result = self.collection.insert_one(record)
+        
+        self.producer.send('workflow-events', value=f" Device ID: {request.device_id} \n \
+                           Timestamp: {request.timestamp} \n \
+                           Temperature: {request.temperature:.2f} °C \n \
+                           Humidity: {request.humidity:.2f}%\n \
+                           -------------------------------------------------------------------------------------".encode())
+
 
         # Log for demonstration
         print(f"Inserted record ID {insert_result.inserted_id} from device '{request.device_id}' into MongoDB.")

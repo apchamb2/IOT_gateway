@@ -49,6 +49,24 @@ CONTENTS:
    - MongoDB Atlas:
        Make sure your connection URI is correct in server.py
 
+5. KAFKA INSTALLATION AND SETUP 
+   - Install:
+       brew install kafka
+   - Start Kafka Service:
+       brew services start zookeeper
+       brew services start kafka
+   - Verify Kafka Service is Running:
+       kafka-topics --list --bootstrap-server localhost:9092
+   - Install JDK:
+       brew install openjdk
+   - Install Confluent Kafka Python Package:
+       pip install confluent-kafka
+
+6. CREATE KAFKA TOPIC
+   kafka-topics --create --topic workflow-events --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+
+
 -----------------------------------------------------
 3) RUNNING THE SERVER
 -----------------------------------------------------
@@ -56,6 +74,8 @@ CONTENTS:
 2. Start the gRPC server:
    python server.py
 3. The server listens on port 50051 by default.
+4. Start the Kafka Consumer to Listen to Events:
+   python kafka_consumer.py
 
 -----------------------------------------------------
 4) RUNNING THE CLIENT
@@ -64,7 +84,7 @@ CONTENTS:
 2. Run the client to send synthetic sensor data:
    python client.py
 
-   The client sends multiple data points to the gRPC server, 
+   The client sends multiple data points to the gRPC server and kafka consumer,
    which in turn stores them in MongoDB.
 
 -----------------------------------------------------
