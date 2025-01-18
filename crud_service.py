@@ -1,4 +1,7 @@
-"""a FastAPI app that demonstrates create, read, update, and delete (CRUD) operations. It’s “time-decoupled” because the CRUD service persists data to the MongoDB database independently of when the sensor data arrives, meaning your gRPC microservice can operate in parallel or feed data at any time."""
+"""a FastAPI app that demonstrates create, read, update, and delete (CRUD) operations. It’s “time-decoupled” because the CRUD service persists data to the MongoDB database independently of when the sensor data arrives, 
+meaning your gRPC microservice can operate in parallel or feed data at any time.
+http://localhost:8000/docs
+"""
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
