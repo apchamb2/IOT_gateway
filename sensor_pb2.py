@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0csensor.proto\x12\x06sensor\"Y\n\nSensorData\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\t\x12\x13\n\x0btemperature\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\"\x1b\n\x08Response\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x07\n\x05\x45mpty\"U\n\rSensorSummary\x12\x15\n\rtotal_devices\x18\x01 \x01(\x05\x12\x17\n\x0f\x61vg_temperature\x18\x02 \x01(\x02\x12\x14\n\x0c\x61vg_humidity\x18\x03 \x01(\x02\x32\x84\x01\n\rSensorService\x12\x39\n\x11\x43ollectSensorData\x12\x12.sensor.SensorData\x1a\x10.sensor.Response\x12\x38\n\x10GetSensorSummary\x12\r.sensor.Empty\x1a\x15.sensor.SensorSummaryb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0csensor.proto\x12\x06sensor\"Y\n\nSensorData\x12\x11\n\tdevice_id\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\t\x12\x13\n\x0btemperature\x18\x03 \x01(\x02\x12\x10\n\x08humidity\x18\x04 \x01(\x02\"\x1c\n\tSensorAck\x12\x0f\n\x07message\x18\x01 \x01(\t2J\n\rSensorService\x12\x39\n\x0eSendSensorData\x12\x12.sensor.SensorData\x1a\x11.sensor.SensorAck\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,12 +33,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_SENSORDATA']._serialized_start=24
   _globals['_SENSORDATA']._serialized_end=113
-  _globals['_RESPONSE']._serialized_start=115
-  _globals['_RESPONSE']._serialized_end=142
-  _globals['_EMPTY']._serialized_start=144
-  _globals['_EMPTY']._serialized_end=151
-  _globals['_SENSORSUMMARY']._serialized_start=153
-  _globals['_SENSORSUMMARY']._serialized_end=238
-  _globals['_SENSORSERVICE']._serialized_start=241
-  _globals['_SENSORSERVICE']._serialized_end=373
+  _globals['_SENSORACK']._serialized_start=115
+  _globals['_SENSORACK']._serialized_end=143
+  _globals['_SENSORSERVICE']._serialized_start=145
+  _globals['_SENSORSERVICE']._serialized_end=219
 # @@protoc_insertion_point(module_scope)

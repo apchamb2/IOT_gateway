@@ -26,7 +26,7 @@ if _version_not_supported:
 
 
 class SensorServiceStub(object):
-    """The gRPC service for handling IoT sensor data.
+    """A simple gRPC service for sending synthetic sensor data.
     """
 
     def __init__(self, channel):
@@ -35,31 +35,19 @@ class SensorServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CollectSensorData = channel.unary_unary(
-                '/sensor.SensorService/CollectSensorData',
+        self.SendSensorData = channel.unary_unary(
+                '/sensor.SensorService/SendSensorData',
                 request_serializer=sensor__pb2.SensorData.SerializeToString,
-                response_deserializer=sensor__pb2.Response.FromString,
-                _registered_method=True)
-        self.GetSensorSummary = channel.unary_unary(
-                '/sensor.SensorService/GetSensorSummary',
-                request_serializer=sensor__pb2.Empty.SerializeToString,
-                response_deserializer=sensor__pb2.SensorSummary.FromString,
+                response_deserializer=sensor__pb2.SensorAck.FromString,
                 _registered_method=True)
 
 
 class SensorServiceServicer(object):
-    """The gRPC service for handling IoT sensor data.
+    """A simple gRPC service for sending synthetic sensor data.
     """
 
-    def CollectSensorData(self, request, context):
-        """Collects sensor data from IoT devices.
-        """
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def GetSensorSummary(self, request, context):
-        """Retrieves a summary of stored data.
+    def SendSensorData(self, request, context):
+        """Sends one sensor reading to the server.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -68,15 +56,10 @@ class SensorServiceServicer(object):
 
 def add_SensorServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CollectSensorData': grpc.unary_unary_rpc_method_handler(
-                    servicer.CollectSensorData,
+            'SendSensorData': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendSensorData,
                     request_deserializer=sensor__pb2.SensorData.FromString,
-                    response_serializer=sensor__pb2.Response.SerializeToString,
-            ),
-            'GetSensorSummary': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetSensorSummary,
-                    request_deserializer=sensor__pb2.Empty.FromString,
-                    response_serializer=sensor__pb2.SensorSummary.SerializeToString,
+                    response_serializer=sensor__pb2.SensorAck.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -87,11 +70,11 @@ def add_SensorServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class SensorService(object):
-    """The gRPC service for handling IoT sensor data.
+    """A simple gRPC service for sending synthetic sensor data.
     """
 
     @staticmethod
-    def CollectSensorData(request,
+    def SendSensorData(request,
             target,
             options=(),
             channel_credentials=None,
@@ -104,36 +87,9 @@ class SensorService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/sensor.SensorService/CollectSensorData',
+            '/sensor.SensorService/SendSensorData',
             sensor__pb2.SensorData.SerializeToString,
-            sensor__pb2.Response.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def GetSensorSummary(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/sensor.SensorService/GetSensorSummary',
-            sensor__pb2.Empty.SerializeToString,
-            sensor__pb2.SensorSummary.FromString,
+            sensor__pb2.SensorAck.FromString,
             options,
             channel_credentials,
             insecure,
