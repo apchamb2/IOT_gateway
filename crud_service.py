@@ -3,11 +3,13 @@ meaning your gRPC microservice can operate in parallel or feed data at any time.
 http://localhost:8000/docs
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 from typing import Optional
 from pymongo import MongoClient
-import os
+from kafka import KafkaProducer
+from kafka.errors import KafkaError
+import os, traceback
 
 app = FastAPI()
 
@@ -19,6 +21,24 @@ client = MongoClient(MONGO_URI)
 db = client["iot_db"]  # Database name
 collection = db["sensor_data"]  # Collection name
 
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9092',
+    value_serializer=lambda v: v.encode('utf-8')
+)
+
+
+# Helper function to send messages to Kafka with error handling
+def send_to_kafka(topic: str, message: str):
+    try:
+        future = producer.send(topic, value=message)
+        record_metadata = future.get(timeout=10)  # Wait for acknowledgment
+        print(f"Message sent to topic: {record_metadata.topic}, "
+              f"partition: {record_metadata.partition}, offset: {record_metadata.offset}")
+    except KafkaError as e:
+        print(f"Failed to send message to Kafka due to KafkaError: {e}")
+    except Exception as e:
+        print(f"Unexpected error while sending to Kafka: {e}")
+
 # 2. Define a Pydantic model for sensor data
 class SensorData(BaseModel):
     device_id: str = Field(..., description="Unique device identifier")
@@ -26,10 +46,28 @@ class SensorData(BaseModel):
     temperature: float = Field(..., description="Temperature reading")
     humidity: float = Field(..., description="Humidity reading")
 
+# Middleware to send Kafka messages on exceptions
+@app.middleware("http")
+async def kafka_error_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as exc:
+        # Log and send the exception details to Kafka
+        error_details = {
+            "path": request.url.path,
+            "method": request.method,
+            "error": str(exc),
+            "traceback": traceback.format_exc()
+        }
+        send_to_kafka('error-events', str(error_details))
+        raise
+    
 # 3. Create (POST) - Insert sensor data into MongoDB
 @app.post("/sensor/", response_model=dict)
 async def create_sensor_data(data: SensorData):
     sensor_dict = data.dict()
+    send_to_kafka('workflow-events', data.model_dump_json())
     result = collection.insert_one(sensor_dict)
     if result.inserted_id:
         return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
@@ -55,6 +93,7 @@ async def update_sensor_data(device_id: str, data: SensorData):
 
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="No matching record to update")
+    send_to_kafka('workflow-events', data.model_dump_json())
     return {"message": "Data updated successfully"}
 
 # 6. Delete (DELETE) - Remove sensor data by device_id
@@ -69,4 +108,5 @@ async def delete_sensor_data(device_id: str, timestamp: Optional[str] = None):
 
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="No matching data found to delete")
+    send_to_kafka('workflow-events', str(delete_filter))
     return {"message": f"Deleted {result.deleted_count} record(s)"}
