@@ -53,8 +53,8 @@ CONTENTS:
    - Install:
        brew install kafka
    - Start Kafka Service:
-       brew services start zookeeper
-       brew services start kafka
+       - brew services start zookeeper
+       - brew services start kafka
    - Verify Kafka Service is Running:
        kafka-topics --list --bootstrap-server localhost:9092
    - Install JDK:
