@@ -45,7 +45,8 @@ CONTENTS:
 
 4. ENSURE MONGODB IS RUNNING
    - Local:
-       mongod
+       - mongod
+       - mongosh --host localhost --port 27017
    - MongoDB Atlas:
        Make sure your connection URI is correct in server.py
 
