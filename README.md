@@ -1,9 +1,9 @@
 # IOT_gateway
 Distributed IoT Gateway System with Edge ML
 
-=====================================================
+=====================================
  IoT gRPC Server with MongoDB - Quick Start Guide
-=====================================================
+=====================================
 
 This project demonstrates a simple gRPC microservice that accepts synthetic sensor data 
 and stores it in MongoDB for later retrieval and analysis.
