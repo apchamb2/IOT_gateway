@@ -93,7 +93,7 @@ CONTENTS:
 3. The server listens on port 50051 by default.
 4. Start the Kafka Consumer to Listen to Events:
    python kafka_consumer.py
-5. Metrics at http://127.0.0.1:8000/metrics
+
 -----------------------------------------------------
 4) RUNNING THE CLIENT
 -----------------------------------------------------

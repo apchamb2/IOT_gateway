@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import grpc_service.sensor_pb2 as sensor__pb2
+import sensor_pb2 as sensor__pb2
 
 GRPC_GENERATED_VERSION = '1.69.0'
 GRPC_VERSION = grpc.__version__
