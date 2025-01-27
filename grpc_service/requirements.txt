@@ -1,0 +1,4 @@
+grpcio==1.69.0
+grpcio-tools==1.69.0
+pymongo==4.10.1
+kafka-python-ng==2.2.3

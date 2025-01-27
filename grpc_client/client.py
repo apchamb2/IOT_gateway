@@ -1,6 +1,6 @@
 import grpc
-import sensor_pb2
-import sensor_pb2_grpc
+import grpc_service.sensor_pb2 as sensor_pb2
+import grpc_service.sensor_pb2_grpc as sensor_pb2_grpc
 import random
 import time
 from datetime import datetime
