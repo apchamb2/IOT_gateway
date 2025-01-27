@@ -24,7 +24,9 @@ CONTENTS:
   - grpcio, grpcio-tools, pymongo
 - Installed Java (JDK)
 - Installed Kafka
-
+- Installed Docker (http://localhost:9090)
+   - Installed/updated WSL 2 if needed (Windows)
+- Installed Grafana (http://localhost:3000 )
 
 -----------------------------------------------------
 2) SETUP INSTRUCTIONS
