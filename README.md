@@ -122,6 +122,25 @@ B) MONGO SHELL (OPTIONAL):
         db.sensor_data.find().pretty()
 
 -----------------------------------------------------
+6) PROMETHEUS AND GRAFANA
+-----------------------------------------------------
+1. From docker-compose.yml 'run all services' or in a bash terminal: docker compose up -d --build
+
+A) PROMETHEUS
+   1. open browser to http://localhost:9090, navigate to Status -> targets 
+   2. generate graphs to test
+B) GRAFANA
+   1. open browser to http://localhost:3000, log in as admin password: admin
+   2. Configuration → Data Sources
+   3. add data source Prometheus
+   4. Configure http://localhost:9090 or if running in docker: http://prometheus:9090
+   5. Save and test
+   6. Dashboards → New → New Dashboard
+   7. Add new panels for: fastapi_requests_total, prometheus_http_requests_total, kafka_messages_sent_total
+   8. send requests to the FastAPI service, produce Kafka messages
+
+
+-----------------------------------------------------
 6) TROUBLESHOOTING
 -----------------------------------------------------
 1. If you receive "Connection refused" or "Failed to connect to server":
