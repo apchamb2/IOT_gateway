@@ -1,7 +1,7 @@
 # IOT_gateway
 Distributed IoT Gateway System with Edge ML for Distrubuted Systems 2025
 
- IoT gRPC Server with MongoDB - Quick Start Guide
+ Quick Start Guide
 =====================================
 
 
@@ -22,6 +22,9 @@ CONTENTS:
   - Remote: MongoDB Atlas account with a connection URI
 - Installed Python dependencies (see requirements.txt):
   - grpcio, grpcio-tools, pymongo
+- Installed Java (JDK)
+- Installed Kafka
+
 
 -----------------------------------------------------
 2) SETUP INSTRUCTIONS
@@ -47,7 +50,7 @@ CONTENTS:
    - MongoDB Atlas:
        Make sure your connection URI is correct in server.py
 
-5. KAFKA INSTALLATION AND SETUP 
+5. KAFKA INSTALLATION AND SETUP (macOS)
    - Install:
        brew install kafka
    - Start Kafka Service:
@@ -60,10 +63,24 @@ CONTENTS:
    - Install Confluent Kafka Python Package:
        pip install confluent-kafka
 
+    KAFKA SETUP (Windows)
+   - Start Zookeeper
+      - In powershell: 
+      cd C:\kafka_2.13-3.9.0
+      .\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+   - Start Kafka
+      - In another powershell window:
+      cd C:\kafka_2.13-3.9.0
+      .\bin\windows\kafka-server-start.bat .\config\server.properties
+   
+
+
 6. CREATE KAFKA TOPIC
    kafka-topics --create --topic workflow-events --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
 
-
+   CREATE KAFKA TOPIC (Windows)
+   - in powershell:
+   .\bin\windows\kafka-topics.bat --create --topic topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
 
 -----------------------------------------------------
 3) RUNNING THE SERVER
@@ -117,6 +134,6 @@ B) MONGO SHELL (OPTIONAL):
    - Refresh Compass or ensure you're looking at the correct database and collection.
    - Check the server logs for any errors during insertion.
 
-
+4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
