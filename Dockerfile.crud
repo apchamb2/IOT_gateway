@@ -1,7 +1,10 @@
-FROM python:3.13-slim
+FROM python:3.10
+
 WORKDIR /app
-COPY requirements.txt .
+
+COPY crud_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . /app
-EXPOSE 8000
-CMD ["uvicorn", "crud_service:app", "--host", "0.0.0.0", "--port", "8000"]
+
+COPY crud_service /app/crud_service
+
+CMD ["uvicorn", "crud_service.crud_service_app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,7 +1,12 @@
 FROM python:3.13-slim
+
 WORKDIR /app
-COPY requirements.txt .
+
+COPY grpc_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY . /app
+
+COPY grpc_service /app
+
 EXPOSE 50051
-CMD ["python", "server.py"]
+
+CMD ["python", "/app/server.py"]

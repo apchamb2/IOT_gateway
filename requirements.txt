@@ -6,4 +6,4 @@ confluent-kafka==2.8.0
 pymongo==4.10.1
 six==1.17.0
 kafka-python-ng==2.2.3
-prometheus-fastapi-instrumentator==7.0.2
+prometheus-fastapi-instrumentator
