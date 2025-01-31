@@ -7,4 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY kafka_consumer /app
 
-CMD ["python", "/app/kafka_consumer.py"]
+COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
+RUN chmod +x /usr/local/bin/wait-for-it.sh
+
+CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--",  "python", "/app/kafka_consumer.py"]

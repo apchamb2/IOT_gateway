@@ -9,4 +9,7 @@ COPY grpc_service /app
 
 EXPOSE 50051
 
-CMD ["python", "/app/server.py"]
+COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
+RUN chmod +x /usr/local/bin/wait-for-it.sh
+
+CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/server.py"]

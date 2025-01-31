@@ -27,6 +27,8 @@ CONTENTS:
 - Installed Docker (http://localhost:9090)
    - Installed/updated WSL 2 if needed (Windows)
 - Installed Grafana (http://localhost:3000 )
+- Install wait-for-it.sh in the current working directory for holding the other services until Kafka runs
+- curl -O https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
 
 -----------------------------------------------------
 2) SETUP INSTRUCTIONS

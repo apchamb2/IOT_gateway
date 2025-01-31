@@ -5,7 +5,7 @@ services:
     environment:
       ALLOW_ANONYMOUS_LOGIN: "yes"
     ports:
-      - "2181:2181"
+      - "22181:2181"
     restart: on-failure
     volumes:
       - ./config/zookeeper.properties:/opt/bitnami/zookeeper/conf/zoo.cfg
@@ -17,20 +17,22 @@ services:
     image: bitnami/kafka:latest
     container_name: kafka
     depends_on:
-        - zookeeper
+      - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       ALLOW_PLAINTEXT_LISTENER: "yes"
-      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
     ports:
       - "9092:9092"
     volumes:
       - ./data/kafka:/bitnami/kafka/data
     networks:
       - microservice_network
-
+      
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -54,7 +56,7 @@ services:
       - KAFKA_BROKER=kafka:9092
     ports:
       - "8000:8000"
-    command: "uvicorn crud_service.crud_service_app:app --host 0.0.0.0 --port 8000"
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "uvicorn", "crud_service.crud_service_app:app", "--host", "0.0.0.0", "--port", "8000"]
     networks:
       - microservice_network
 
@@ -107,7 +109,7 @@ services:
     container_name: grafana
     environment:
     - GF_SECURITY_ADMIN_USER=admin
-    - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SECURITY_ADMIN_PASSWORD=beano.1man
     ports:
       - "3000:3000"
     depends_on:
