@@ -21,7 +21,7 @@ from kafka.errors import KafkaError
 
 # Prometheus instrumentation
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import Counter
+from prometheus_client import Counter, REGISTRY
 
 
 @asynccontextmanager

@@ -3,7 +3,7 @@ import sensor_pb2
 import sensor_pb2_grpc
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 def generate_synthetic_data():
     """
@@ -19,10 +19,11 @@ def run():
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = sensor_pb2_grpc.SensorServiceStub(channel)
 
+        iterations = 30
         # Simulate sending multiple sensor readings
-        for i in range(5):
+        for i in range(iterations):
             temp, hum = generate_synthetic_data()
-            current_time = datetime.utcnow().isoformat()
+            current_time = datetime.now(timezone.utc).isoformat()
 
             # Create the SensorData message
             sensor_data = sensor_pb2.SensorData(
@@ -34,10 +35,10 @@ def run():
 
             # Send the data to the server
             response = stub.SendSensorData(sensor_data)
-            print(f"Server response: {response.message}")
+            print(f"[{current_time}] Server response: {response.message}")
 
-            # Wait a bit before sending the next reading
-            time.sleep(2)
+            # Wait 10 seconds before sending the next reading
+            time.sleep(10)
 
 if __name__ == "__main__":
     run()
