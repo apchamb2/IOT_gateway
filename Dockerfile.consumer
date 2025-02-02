@@ -1,13 +1,13 @@
-FROM python:3.13-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
 COPY kafka_consumer/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY kafka_consumer /app
+COPY kafka_consumer /app/kafka_consumer
 
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
-CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--",  "python", "/app/kafka_consumer.py"]
+CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--",  "python", "/app/kafka_consumer/kafka_consumer.py"]

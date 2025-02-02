@@ -55,7 +55,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/
       - KAFKA_BROKER=kafka:9092
     ports:
-      - "8000:8000"
+      - "8001:8000" #changed port from 8000 to 8001
     command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "uvicorn", "crud_service.crud_service_app:app", "--host", "0.0.0.0", "--port", "8000"]
     networks:
       - microservice_network
@@ -69,7 +69,7 @@ services:
       - kafka
     ports:
       - "50051:50051"
-    command: ["python", "/app/server.py"]
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "-m", "grpc_service.server"]
     networks:
       - microservice_network
 
@@ -79,7 +79,7 @@ services:
       dockerfile: Dockerfile.client
     depends_on:
       - grpc_service
-    command: ["python", "/app/client.py"] 
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/grpc_client/client.py"]
     networks:
       - microservice_network
 
@@ -88,9 +88,11 @@ services:
       context: .
       dockerfile: Dockerfile.consumer
     container_name: kafka_consumer
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       - kafka
-    command: ["python", "/app/kafka_consumer.py"]
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--",  "python", "/app/kafka_consumer/kafka_consumer.py"]
     networks:
       - microservice_network
 

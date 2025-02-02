@@ -1,15 +1,16 @@
-FROM python:3.13-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
 COPY grpc_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY grpc_service /app
+COPY grpc_service /app/grpc_service
 
 EXPOSE 50051
 
 COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
-CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/server.py"]
+CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "-m", "grpc_service.server"]
+

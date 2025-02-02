@@ -13,7 +13,7 @@ from pymongo import MongoClient
 # Kafka Message Sending Package
 from kafka import KafkaProducer
 
-producer = KafkaProducer(bootstrap_servers='localhost:9092')
+producer = KafkaProducer(bootstrap_servers='kafka:9092')
 
 
 class SensorService(sensor_pb2_grpc.SensorServiceServicer):
@@ -24,7 +24,7 @@ class SensorService(sensor_pb2_grpc.SensorServiceServicer):
     def __init__(self):
         # Initialize MongoDB connection
         # For a local MongoDB instance: "mongodb://localhost:27017/"
-        self.client = MongoClient("mongodb://localhost:27017/")
+        self.client = MongoClient("mongodb://mongodb:27017/")
         self.db = self.client["iot_db"]
         self.collection = self.db["sensor_data"]
         self.producer = producer

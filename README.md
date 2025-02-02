@@ -89,6 +89,8 @@ CONTENTS:
 -----------------------------------------------------
 3) RUNNING THE SERVER
 -----------------------------------------------------
+
+LOCALLY:
 1. Open a terminal in the project folder.
 2. Start the gRPC server:
    python server.py
@@ -96,6 +98,14 @@ CONTENTS:
 4. Start the Kafka Consumer to Listen to Events:
    python kafka_consumer.py
 5. Metrics at http://127.0.0.1:8000/metrics
+
+DOCKER:
+in the terminal from the project directory
+docker-compose down --volumes    # Stop and clean up
+docker-compose build             # Rebuild the images
+docker-compose up -d             # Start in detached mode
+docker-compose logs -f           # Follow logs to ensure services are running
+
 -----------------------------------------------------
 4) RUNNING THE CLIENT
 -----------------------------------------------------
