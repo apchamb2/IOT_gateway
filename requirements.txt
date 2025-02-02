@@ -2,7 +2,6 @@ grpcio==1.69.0
 grpcio-tools==1.69.0
 fastapi==0.115.6
 uvicorn==0.34.0
-confluent-kafka==2.8.0
 pymongo==4.10.1
 six==1.17.0
 kafka-python-ng==2.2.3

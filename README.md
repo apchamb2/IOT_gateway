@@ -91,7 +91,7 @@ CONTENTS:
 2. Start the gRPC server:
    python server.py
 3. The server listens on port 50051 by default.
-4. Start the Kafka Consumer to Listen to Events:
+4. In another terminal in the project folder, start the Kafka Consumer to Listen to Events:
    python kafka_consumer.py
 
 -----------------------------------------------------
