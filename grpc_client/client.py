@@ -1,6 +1,12 @@
+import sys
+import os
+
+# Ensure the parent directory is in Python's module search path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import grpc
-import grpc_service.sensor_pb2 as sensor_pb2
-import grpc_service.sensor_pb2_grpc as sensor_pb2_grpc
+from grpc_service import sensor_pb2
+from grpc_service import sensor_pb2_grpc
 import random
 import time
 from datetime import datetime, timezone
