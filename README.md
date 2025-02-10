@@ -181,6 +181,9 @@ B) MONGO SHELL (OPTIONAL):
    This will create an SVG file (profile.svg) showing a visual representation of where the CPU time is being spent.
    Open the profile.svg file in a browser to analyze the results.
 
+   ![alt text](testingImages/image.png)
+
+
 ## Load Testing
 - pip install locust
 
