@@ -8,6 +8,8 @@ http://127.0.0.1:8000/metrics
 
 import os, traceback
 from contextlib import asynccontextmanager
+import cProfile, pstats
+from io import StringIO
 
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -18,7 +20,7 @@ from kafka.errors import KafkaError
 
 # Prometheus instrumentation
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import CollectorRegistry, Counter, REGISTRY
+from prometheus_client import CollectorRegistry, Counter,REGISTRY
 
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
@@ -100,14 +102,36 @@ async def kafka_error_middleware(request: Request, call_next):
         raise
 
 # ----------------- CRUD ENDPOINTS -----------------------
+# @app.post("/sensor/", response_model=dict)
+# async def create_sensor_data(data: SensorData):
+#     sensor_dict = data.dict()
+#     send_to_kafka('workflow-events', data.json())
+#     result = collection.insert_one(sensor_dict)
+#     if result.inserted_id:
+#         return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
+#     raise HTTPException(status_code=500, detail="Error inserting data")
+
 @app.post("/sensor/", response_model=dict)
 async def create_sensor_data(data: SensorData):
+    # Start profiling
+    pr = cProfile.Profile()
+    pr.enable()
+
     sensor_dict = data.dict()
     send_to_kafka('workflow-events', data.json())
     result = collection.insert_one(sensor_dict)
+
+    # Stop profiling
+    pr.disable()
+    s = StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
+    ps.print_stats()
+    print(s.getvalue())  # Print profiling results to logs
+
     if result.inserted_id:
         return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
     raise HTTPException(status_code=500, detail="Error inserting data")
+
 
 @app.get("/sensor/{device_id}", response_model=list)
 async def get_sensor_data(device_id: str):

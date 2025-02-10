@@ -151,3 +151,37 @@ B) MONGO SHELL (OPTIONAL):
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
+## Profiling 
+
+
+1. Installation 
+   - pip install py-spy
+
+   - mac user
+   - brew install py-spy
+
+   Ensure py-spy is Installed Inside the Container
+
+   - docker exec -it <container_id> /bin/sh
+   - which py-spy
+   - pip install py-spy
+
+   - docker ps  (to get the container id of curd_services container)
+
+   - docker exec -it 45828d5937a5 py-spy top --pid 1
+
+2. Attach py-spy to the container:
+
+   - docker exec -it <container_name_or_id> py-spy top --pid 1
+   - Replace <container_name_or_id> with the actual container name (e.g., crud_service).
+
+3. To generate a flame graph for deeper analysis:
+
+   - docker exec -it <container_name_or_id> py-spy record -o profile.svg --pid 1 ( optional)
+   This will create an SVG file (profile.svg) showing a visual representation of where the CPU time is being spent.
+   Open the profile.svg file in a browser to analyze the results.
+
+## Load Testing
+- pip install locust
+
+- locust -f locustfile.py --host=http://localhost:8000
