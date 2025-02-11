@@ -23,11 +23,7 @@ from kafka.errors import KafkaError
 
 # Prometheus instrumentation
 from prometheus_fastapi_instrumentator import Instrumentator
-<<<<<<<< HEAD:crud_service.py
-from prometheus_client import Counter, REGISTRY
-========
-from prometheus_client import CollectorRegistry, Counter,REGISTRY
->>>>>>>> ac-dockerize:crud_service_app.py
+from prometheus_client import CollectorRegistry, Counter, REGISTRY
 
 
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
@@ -175,10 +171,5 @@ if __name__ == "__main__":
         "crud_service_app:app",
         host="0.0.0.0", # Changed from 127.0.0.1 to allow external access inside Docker
         port=8000,
-<<<<<<<< HEAD:crud_service.py
         reload=True,  # for dev auto-reload
     )
-========
-        reload=True,  
-    )
->>>>>>>> ac-dockerize:crud_service_app.py
