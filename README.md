@@ -230,16 +230,8 @@ Then, start Minikube:
 ## Verify the PVCs
 - kubectl get pvc
 
-- kubectl apply -f ZookeeperDeployment.yml
-- kubectl apply -f CRUDServiceDeployment.yml
-- kubectl apply -f GrafanaDeployment.yml
-- kubectl apply -f MongoDBDeployment.yml
-- kubectl apply -f prometheus.yml
-- kubectl apply -f gRPCServiceDeployment.yml
-- kubectl apply -f KafkaConsumerDeployment.yml
-- kubectl apply -f KafkaDeployment.yml
-- kubectl apply -f HPAforCRUDService.yml
 
+kubectl apply -f HPAforCRUDService.yml
 
 
 <!-- kubectl apply -f gRPCClientDeployment.yml -->
@@ -255,10 +247,176 @@ kubectl get pods
 kubectl get svc crud-service
 
 ## Simulate Traffic
-- kubectl get hpa --watch
-- kubectl get pods -l app=crud-service --watch
+kubectl get hpa --watch
+kubectl get pods -l app=crud-service --watch
 
 
 ## kubectl exec -it crud-service-87ff87764-hchsk -- curl http://crud-service:80/metrics
 
 kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service
+
+
+kubectl get pods -n kube-system | grep metrics-server
+
+
+Make the script executable:
+chmod +x apply-all.sh
+
+Run the script:
+./apply-all.sh
+
+Verify Deployment
+
+kubectl get pods
+kubectl get svc
+
+Test Monitoring 
+kubectl port-forward svc/prometheus 9090:9090
+kubectl port-forward svc/grafana 3000:3000
+
+
+
+grafana
+admin
+beano.1man
+
+kubectl exec -it crud-service-87ff87764-4hsts -- curl http://localhost:8000/metrics
+
+kubectl run -it --rm --image=curlimages/curl --restart=Never curl-pod -- sh
+curl http://crud-service:8000/metrics
+
+
+
+
+
+
+ kubectl exec -it crud-service-778c468598-crs9l -- curl http://localhost:8000/metrics
+
+  kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service
+
+  kubectl exec -it crud-service-778c468598-crs9l -- curl http://crud-service:8000/metrics
+
+
+
+## Module 5: Performance Optimization
+
+## Prerequisites
+- Docker installed.
+- Kubernetes cluster ( Minikube and Kind).
+- Python and pip installed for local development.
+
+## Steps to Reproduce
+
+- docker exec -it <crud-service-pod> py-spy top --pid 1
+Set Up Monitoring and apply Prometheus and Grafana configurations:
+
+- kubectl apply -f prometheus.yml
+- kubectl apply -f grafana.yml
+Forward Prometheus and Grafana ports:
+
+kubectl port-forward svc/prometheus 9090:9090
+kubectl port-forward svc/grafana 3000:3000
+Access Prometheus at http://localhost:9090/targets and Grafana at http://localhost:3000.
+## Run Load Testing :
+- Install Locust:
+   - pip install locust
+   - locust -f locustfile.py --host=http://localhost:8000
+   - Open the Locust web interface at http://localhost:8089 to configure and start the test.
+
+## Module 6: Elasticity and Scalability
+
+- Prerequisites
+   - Kubernetes cluster (e.g., Minikube or Kind).
+   - kubectl configured to interact with the cluster.
+   - All Docker images pushed to a container registry (e.g., Docker Hub).
+   - Steps to Reproduce
+      - Apply Kubernetes Manifests :
+      - Deploy all services using the provided YAML files:
+
+         - kubectl apply -f ZookeeperDeployment.yml
+         - kubectl apply -f CRUDServiceDeployment.yml
+         - kubectl apply -f GrafanaDeployment.yml
+         - kubectl apply -f MongoDBDeployment.yml
+         - kubectl apply -f prometheus.yml
+         - kubectl apply -f gRPCServiceDeployment.yml
+         - kubectl apply -f KafkaConsumerDeployment.yml
+         - kubectl apply -f KafkaDeployment.yml
+         - kubectl apply -f HPAforCRUDService.yml
+
+   - Verify Pods and Services :
+      - kubectl get pods
+   - Check service status:
+      - kubectl get svc
+
+   - Test Horizontal Pod Autoscaling (HPA) :
+      Verify HPA configuration:
+      - kubectl get hpa
+      - kubectl describe hpa crud-service-hpa
+
+   - Simulate traffic using Locust:
+
+      - locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
+   Observe scaling behavior:
+
+      - kubectl get pods -l app=crud-service --watch
+   - Access Monitoring Tools :
+   Forward Prometheus and Grafana ports:
+
+      - kubectl port-forward svc/prometheus 9090:9090
+      - kubectl port-forward svc/grafana 3000:3000
+      - Access Prometheus at http://localhost:9090/targets and Grafana at http://localhost:3000.
+
+   - Test Fault Tolerance :
+      - kubectl delete pod -l app=crud-service
+      - kubectl delete pod -l app=kafka
+      - kubectl delete pod -l app=mongodb
+
+   - Verify recovery:
+      - kubectl get pods --watch
+
+   - Optional: Test DNS Resolution :
+   From the Prometheus pod:
+      - kubectl exec -it <prometheus-pod> -- nslookup crud-service
+   From any pod:
+      - kubectl exec -it <any-pod> -- curl http://crud-service:8000/metrics
+
+
+## Note: 
+Ensure all Docker images are built and pushed to a registry before deploying:
+
+- docker build -t <your-dockerhub-username>/iot_gateway-<service-name>:latest -f Dockerfile.<service-name> .
+- docker push <your-dockerhub-username>/iot_gateway-<service-name>:latest
+
+- If using Minikube, ensure the Metrics Server is installed for HPA:
+   - minikube addons enable metrics-server
+
+For 
+# Step 1: Deploy all services
+- kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service
+
+- kubectl get pods -n kube-system | grep metrics-server
+
+## Make the script executable:
+- chmod +x apply-all.sh
+## Run the script:
+- ./apply-all.sh
+
+# Step 2: Verify deployment
+- kubectl get pods
+- kubectl get svc
+
+# Step 3: Test HPA
+- kubectl get hpa
+- kubectl describe hpa crud-service-hpa
+
+# Step 4: Access monitoring tools
+- kubectl port-forward svc/prometheus 9090:9090
+- kubectl port-forward svc/grafana 3000:3000
+
+# Step 5: Run load testing
+- locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
+
+# Step 6: Simulate failures
+- kubectl delete pod -l app=crud-service
+- kubectl delete pod -l app=kafka
+- kubectl delete pod -l app=mongodb

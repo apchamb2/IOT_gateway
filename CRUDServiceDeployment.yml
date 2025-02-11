@@ -39,6 +39,6 @@ spec:
     app: crud-service
   ports:
     - protocol: TCP
-      port: 80 # Exposed port for external access
+      port: 8000 # Exposed port for external access
       targetPort: 8000 # Internal port where the app listens
   type: ClusterIP
