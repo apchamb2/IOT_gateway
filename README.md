@@ -151,7 +151,6 @@ B) MONGO SHELL (OPTIONAL):
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
-
 ## Module 5: Performance Optimization
 
 ## Prerequisites
@@ -171,11 +170,16 @@ Forward Prometheus and Grafana ports:
 kubectl port-forward svc/prometheus 9090:9090
 kubectl port-forward svc/grafana 3000:3000
 Access Prometheus at http://localhost:9090/targets and Grafana at http://localhost:3000.
+
+
 ## Run Load Testing :
 - Install Locust:
    - pip install locust
    - locust -f locustfile.py --host=http://localhost:8000
    - Open the Locust web interface at http://localhost:8089 to configure and start the test.
+
+![alt text](testingImages/image.png)
+
 
 ## Module 6: Elasticity and Scalability
 
@@ -270,7 +274,7 @@ For
 # Step 5: Run load testing
 - locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
 
-[text](<./testingImages/LocustVideo.mp4>)
+![alt text](./testingImages/LocustVideo.mp4)
 
 # Step 6: Simulate failures
 - kubectl delete pod -l app=crud-service
