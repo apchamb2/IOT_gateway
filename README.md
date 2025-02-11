@@ -416,7 +416,7 @@ For
 # Step 5: Run load testing
 - locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
 
-[text](<./testingImages/LocustVideo.mov>)
+[text](<./testingImages/LocustVideo.mp4>)
 
 
 # Step 6: Simulate failures
