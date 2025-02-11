@@ -273,8 +273,8 @@ For
 
 # Step 5: Run load testing
 - locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
-
-![alt text](testingImages/LocustVideo.mp4)
+  
+https://github.com/user-attachments/assets/21d2aeb3-f6ca-4632-90ed-a511e733b34e
 
 # Step 6: Simulate failures
 - kubectl delete pod -l app=crud-service
