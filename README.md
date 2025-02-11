@@ -188,3 +188,77 @@ B) MONGO SHELL (OPTIONAL):
 - pip install locust
 
 - locust -f locustfile.py --host=http://localhost:8000
+
+
+
+
+1. Check if Kubernetes is Running
+
+If Minikube is not installed, install it:
+
+
+- brew install minikube
+
+Then, start Minikube:
+- minikube start
+
+- If you are using Docker Desktop’s Kubernetes instead of Minikube, check if it’s enabled:
+
+- Open Docker Desktop → Settings → Kubernetes → Ensure it is enabled.
+- Restart Docker Desktop if needed.
+
+- kubectl apply -f zookeeper-pvc.yml
+
+- minikube stop
+- minikube start
+
+- brew install kind
+
+- kind delete cluster
+- kind create cluster
+
+
+- kubernetes module 6
+
+
+- kubectl apply -f zookeeper-pvc.yml
+- kubectl apply -f kafka-pvc.yml
+- kubectl apply -f mongo-pvc.yml
+- kubectl apply -f prometheus-pvc.yml
+- kubectl apply -f grafana-pvc.yml
+
+## Verify the PVCs
+- kubectl get pvc
+
+- kubectl apply -f ZookeeperDeployment.yml
+- kubectl apply -f CRUDServiceDeployment.yml
+- kubectl apply -f GrafanaDeployment.yml
+- kubectl apply -f MongoDBDeployment.yml
+- kubectl apply -f prometheus.yml
+- kubectl apply -f gRPCServiceDeployment.yml
+- kubectl apply -f KafkaConsumerDeployment.yml
+- kubectl apply -f KafkaDeployment.yml
+- kubectl apply -f HPAforCRUDService.yml
+
+
+
+<!-- kubectl apply -f gRPCClientDeployment.yml -->
+
+
+kubectl get pods
+
+
+
+## Test Horizontal Pod Autoscaler (HPA)
+- kubectl get hpa
+
+kubectl get svc crud-service
+
+## Simulate Traffic
+- kubectl get hpa --watch
+- kubectl get pods -l app=crud-service --watch
+
+
+## kubectl exec -it crud-service-87ff87764-hchsk -- curl http://crud-service:80/metrics
+
+kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service

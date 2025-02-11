@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crud-service
+  template:
+    metadata:
+      labels:
+        app: crud-service
+    spec:
+      containers:
+      - name: crud-service
+        image: haseebr26/iot_gateway-crud_service:latest
+        ports:
+        - containerPort: 8000 # Ensure this matches the port where the app runs
+        env:
+        - name: MONGO_URI
+          value: "mongodb://mongodb:27017/"
+        - name: KAFKA_BROKER
+          value: "kafka:9092"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-service
+spec:
+  selector:
+    app: crud-service
+  ports:
+    - protocol: TCP
+      port: 80 # Exposed port for external access
+      targetPort: 8000 # Internal port where the app listens
+  type: ClusterIP

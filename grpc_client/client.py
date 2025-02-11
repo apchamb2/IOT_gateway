@@ -22,7 +22,7 @@ def generate_synthetic_data():
 
 def run():
     # Connect to the gRPC server
-    with grpc.insecure_channel("grpc_service:50051") as channel:
+    with grpc.insecure_channel("grpc-service:50051") as channel:
         stub = sensor_pb2_grpc.SensorServiceStub(channel)
 
         # Simulate sending multiple sensor readings
