@@ -27,6 +27,8 @@ CONTENTS:
 - Installed Docker (http://localhost:9090)
    - Installed/updated WSL 2 if needed (Windows)
 - Installed Grafana (http://localhost:3000 )
+- Install wait-for-it.sh in the current working directory for holding the other services until Kafka runs
+- curl -O https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
 
 -----------------------------------------------------
 2) SETUP INSTRUCTIONS
@@ -87,12 +89,22 @@ CONTENTS:
 -----------------------------------------------------
 3) RUNNING THE SERVER
 -----------------------------------------------------
+
+LOCALLY:
 1. Open a terminal in the project folder.
 2. Start the gRPC server:
    python server.py
 3. The server listens on port 50051 by default.
-4. In another terminal in the project folder, start the Kafka Consumer to Listen to Events:
+4. Start the Kafka Consumer to Listen to Events:
    python kafka_consumer.py
+5. Metrics at http://127.0.0.1:8000/metrics
+
+DOCKER:
+in the terminal from the project directory
+docker-compose down --volumes    # Stop and clean up
+docker-compose build             # Rebuild the images
+docker-compose up -d             # Start in detached mode
+docker-compose logs -f           # Follow logs to ensure services are running
 
 -----------------------------------------------------
 4) RUNNING THE CLIENT
@@ -122,25 +134,6 @@ B) MONGO SHELL (OPTIONAL):
         db.sensor_data.find().pretty()
 
 -----------------------------------------------------
-6) PROMETHEUS AND GRAFANA
------------------------------------------------------
-1. From docker-compose.yml 'run all services' or in a bash terminal: docker compose up -d --build
-
-A) PROMETHEUS
-   1. open browser to http://localhost:9090, navigate to Status -> targets 
-   2. generate graphs to test
-B) GRAFANA
-   1. open browser to http://localhost:3000, log in as admin password: admin
-   2. Configuration → Data Sources
-   3. add data source Prometheus
-   4. Configure http://localhost:9090 or if running in docker: http://prometheus:9090
-   5. Save and test
-   6. Dashboards → New → New Dashboard
-   7. Add new panels for: fastapi_requests_total, prometheus_http_requests_total, kafka_messages_sent_total
-   8. send requests to the FastAPI service, produce Kafka messages
-
-
------------------------------------------------------
 6) TROUBLESHOOTING
 -----------------------------------------------------
 1. If you receive "Connection refused" or "Failed to connect to server":
@@ -158,3 +151,40 @@ B) GRAFANA
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
+## Profiling 
+
+
+1. Installation 
+   - pip install py-spy
+
+   - mac user
+   - brew install py-spy
+
+   Ensure py-spy is Installed Inside the Container
+
+   - docker exec -it <container_id> /bin/sh
+   - which py-spy
+   - pip install py-spy
+
+   - docker ps  (to get the container id of curd_services container)
+
+   - docker exec -it 45828d5937a5 py-spy top --pid 1
+
+2. Attach py-spy to the container:
+
+   - docker exec -it <container_name_or_id> py-spy top --pid 1
+   - Replace <container_name_or_id> with the actual container name (e.g., crud_service).
+
+3. To generate a flame graph for deeper analysis:
+
+   - docker exec -it <container_name_or_id> py-spy record -o profile.svg --pid 1 ( optional)
+   This will create an SVG file (profile.svg) showing a visual representation of where the CPU time is being spent.
+   Open the profile.svg file in a browser to analyze the results.
+
+   ![alt text](testingImages/image.png)
+
+
+## Load Testing
+- pip install locust
+
+- locust -f locustfile.py --host=http://localhost:8000

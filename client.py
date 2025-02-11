@@ -1,6 +1,12 @@
+import sys
+import os
+
+# Ensure the parent directory is in Python's module search path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import grpc
-import sensor_pb2
-import sensor_pb2_grpc
+from grpc_service import sensor_pb2
+from grpc_service import sensor_pb2_grpc
 import random
 import time
 from datetime import datetime, timezone
@@ -16,11 +22,12 @@ def generate_synthetic_data():
 
 def run():
     # Connect to the gRPC server
-    with grpc.insecure_channel("localhost:50051") as channel:
+    with grpc.insecure_channel("grpc_service:50051") as channel:
         stub = sensor_pb2_grpc.SensorServiceStub(channel)
 
-        iterations = 30
         # Simulate sending multiple sensor readings
+        iterations = 30
+
         for i in range(iterations):
             temp, hum = generate_synthetic_data()
             current_time = datetime.now(timezone.utc).isoformat()
@@ -37,7 +44,7 @@ def run():
             response = stub.SendSensorData(sensor_data)
             print(f"[{current_time}] Server response: {response.message}")
 
-            # Wait 10 seconds before sending the next reading
+            # Wait a bit before sending the next reading
             time.sleep(10)
 
 if __name__ == "__main__":

@@ -1,5 +1,101 @@
-version: '3.8'
 services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    ports:
+      - "22181:2181"
+    restart: on-failure
+    volumes:
+      - ./config/zookeeper.properties:/opt/bitnami/zookeeper/conf/zoo.cfg
+      - ./data/zookeeper:/bitnami/zookeeper
+    networks:
+      - microservice_network
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./data/kafka:/bitnami/kafka/data
+    networks:
+      - microservice_network
+      
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./data/mongo:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - microservice_network
+
+  crud_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.crud
+    container_name: crud_service
+    depends_on:
+      - mongodb
+      - kafka
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+      - KAFKA_BROKER=kafka:9092
+    ports:
+      - "8001:8000" #changed port from 8000 to 8001
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "uvicorn", "crud_service.crud_service_app:app", "--host", "0.0.0.0", "--port", "8000"]
+    networks:
+      - microservice_network
+
+  grpc_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.grpc
+    container_name: grpc_service
+    depends_on:
+      - kafka
+    ports:
+      - "50051:50051"
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "-m", "grpc_service.server"]
+    networks:
+      - microservice_network
+
+  grpc_client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    depends_on:
+      - grpc_service
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/grpc_client/client.py"]
+    networks:
+      - microservice_network
+
+  kafka_consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    container_name: kafka_consumer
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    depends_on:
+      - kafka
+    command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--",  "python", "/app/kafka_consumer/kafka_consumer.py"]
+    networks:
+      - microservice_network
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -7,11 +103,23 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    networks:
+      - microservice_network
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    environment:
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=beano.1man
     ports:
       - "3000:3000"
     depends_on:
       - prometheus
+    networks:
+      - microservice_network
+
+networks:
+  microservice_network:
+    name: microservice_network 
+    driver: bridge

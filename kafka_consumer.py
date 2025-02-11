@@ -1,9 +1,12 @@
+import os
 from kafka import KafkaConsumer
 import time
 
+
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
 consumer = KafkaConsumer(
     'workflow-events',
-    bootstrap_servers='localhost:9092',
+    bootstrap_servers='kafka:9092',
     group_id='workflow-group',
     auto_offset_reset='earliest'
 )
