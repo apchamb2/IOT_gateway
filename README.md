@@ -151,6 +151,12 @@ B) MONGO SHELL (OPTIONAL):
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
+
+![alt text](/testingImages/SystemDiagram.png)
+
+
+
+
 ## Module 5: Performance Optimization
 
 ## Prerequisites
