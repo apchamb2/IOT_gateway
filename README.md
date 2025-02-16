@@ -206,6 +206,7 @@ Access Prometheus at http://localhost:9090/targets and Grafana at http://localho
          - kubectl apply -f KafkaConsumerDeployment.yml
          - kubectl apply -f KafkaDeployment.yml
          - kubectl apply -f HPAforCRUDService.yml
+         - kubectl apply -f gRPCService.yml
 
    - Verify Pods and Services :
       - kubectl get pods

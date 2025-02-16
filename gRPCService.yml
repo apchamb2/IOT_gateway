@@ -4,9 +4,9 @@ metadata:
   name: grpc-service
 spec:
   selector:
-    app: grpc-service  # Ensure this matches the label on your gRPC service pod
+    app: grpc-service
   ports:
     - protocol: TCP
       port: 50051
       targetPort: 50051
-  clusterIP: None  # Makes it headless (optional depending on your setup)
+  type: ClusterIP

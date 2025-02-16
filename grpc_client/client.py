@@ -22,30 +22,32 @@ def generate_synthetic_data():
 
 def run():
     # Connect to the gRPC server
-    with grpc.insecure_channel("grpc-service:50051") as channel:
-        stub = sensor_pb2_grpc.SensorServiceStub(channel)
+    # with grpc.insecure_channel("grpc-service:50051") as channel:
+    # with grpc.insecure_channel("grpc-service.default.svc.cluster.local:50051") as channel:
+    channel = grpc.insecure_channel('grpc-service:50051')
+    stub = sensor_pb2_grpc.SensorServiceStub(channel)
+    
+    # Simulate sending multiple sensor readings
+    iterations = 30
 
-        # Simulate sending multiple sensor readings
-        iterations = 30
+    for i in range(iterations):
+        temp, hum = generate_synthetic_data()
+        current_time = datetime.now(timezone.utc).isoformat()
 
-        for i in range(iterations):
-            temp, hum = generate_synthetic_data()
-            current_time = datetime.now(timezone.utc).isoformat()
+        # Create the SensorData message
+        sensor_data = sensor_pb2.SensorData(
+            device_id="sensor-001",
+            timestamp=current_time,
+            temperature=temp,
+            humidity=hum
+        )
 
-            # Create the SensorData message
-            sensor_data = sensor_pb2.SensorData(
-                device_id="sensor-001",
-                timestamp=current_time,
-                temperature=temp,
-                humidity=hum
-            )
+        # Send the data to the server
+        response = stub.SendSensorData(sensor_data)
+        print(f"[{current_time}] Server response: {response.message}")
 
-            # Send the data to the server
-            response = stub.SendSensorData(sensor_data)
-            print(f"[{current_time}] Server response: {response.message}")
-
-            # Wait a bit before sending the next reading
-            time.sleep(10)
+        # Wait a bit before sending the next reading
+        time.sleep(10)
 
 if __name__ == "__main__":
     run()

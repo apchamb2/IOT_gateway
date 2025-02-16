@@ -14,13 +14,10 @@ spec:
     spec:
       containers:
       - name: grpc-client
-        image: haseebr26/iot_gateway-grpc_client:latest
+        image: haseebr26/iot_gateway_grpc_client:latest
         env:
         - name: KAFKA_BROKER
           value: "kafka:9092"
-        volumeMounts:
-        - name: grpc-client-data
-          mountPath: /app/data # Adjust the path based on your application's requirements
         resources:
           requests:
             cpu: "500m"
@@ -28,6 +25,9 @@ spec:
           limits:
             cpu: "1"
             memory: "1Gi"
+        volumeMounts:
+        - name: grpc-client-data
+          mountPath: /app/data
       volumes:
       - name: grpc-client-data
         persistentVolumeClaim:
