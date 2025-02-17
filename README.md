@@ -64,8 +64,6 @@ CONTENTS:
        kafka-topics --list --bootstrap-server localhost:9092
    - Install JDK:
        brew install openjdk
-   - Install Confluent Kafka Python Package:
-       pip install confluent-kafka
 
     KAFKA SETUP (Windows)
    - Start Zookeeper
