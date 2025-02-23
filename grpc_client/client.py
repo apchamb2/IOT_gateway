@@ -1,15 +1,20 @@
 import sys
 import os
 import grpc
+
+# Append parent directory to the system path to import grpc_service modules
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))) 
+
+from grpc_service import sensor_pb2 as sensor_pb2
+from grpc_service import sensor_pb2_grpc as sensor_pb2_grpc
 import random
 import time
 import json  # For converting sensor data to JSON format
 from datetime import datetime, timezone
 from openai import OpenAI  # Import the OpenAI API client
 
-# Append parent directory to the system path to import grpc_service modules
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from grpc_service import sensor_pb2, sensor_pb2_grpc
+
+
 
 # =============================================================================
 # OpenAI API Configuration
@@ -110,7 +115,7 @@ def run():
     If an anomaly is detected, also request an explanation from the GPT model.
     """
     # Create a gRPC channel to communicate with the sensor service.
-    channel = grpc.insecure_channel('grpc-service:50051')
+    channel = grpc.insecure_channel('grpc_service:50051')
     stub = sensor_pb2_grpc.SensorServiceStub(channel)
 
     iterations = 100  # Number of sensor readings to simulate
