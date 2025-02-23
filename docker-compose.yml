@@ -113,7 +113,7 @@ services:
     - GF_SECURITY_ADMIN_USER=admin
     - GF_SECURITY_ADMIN_PASSWORD=beano.1man
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       - prometheus
     networks:

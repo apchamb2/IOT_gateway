@@ -13,4 +13,3 @@ COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
 RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 CMD ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "-m", "grpc_service.server"]
-

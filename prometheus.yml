@@ -14,5 +14,17 @@ scrape_configs:
     static_configs:
       - targets: ["crud_service:8000"]
 
-# - job_name: "grpc_service"
-#crud_service?
+  - job_name: 'windows_exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9182']
+
+#send metrics to grafana
+
+#remote_write:
+#- url: <https://your-remote-write-endpoint>
+#  basic_auth:
+#    username: <your user name>
+#    password: <Your Grafana.com API Key>
+
+
+# grafana token: 
