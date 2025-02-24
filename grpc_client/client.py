@@ -62,7 +62,7 @@ def get_gpt_explanation(sensor_data):
     messages = [
         {
             "role": "system",
-            "content": "You are an AI specializing in IoT anomaly detection. Analyze the given sensor data, detect possible anomalies, and explain any unusual patterns."
+            "content": "You are an AI specializing in IoT anomaly detection. Analyze the given sensor data, detect possible anomalies, and explain any unusual patterns. Note that the expected range for temperature is 15-45 °C and humidity range: 20–80%"
         },
         {
             "role": "user",
