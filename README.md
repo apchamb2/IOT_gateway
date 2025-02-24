@@ -114,7 +114,9 @@ docker-compose logs -f           # Follow logs to ensure services are running
    python client.py
 
    The client sends multiple data points to the gRPC server and kafka consumer,
-   which in turn stores them in MongoDB.
+   which in turn stores them in MongoDB. The client uses an OpenAI API to get insights on anomalous data detected.
+
+   ![alt text](testingImages\GPT%API%(1).png)
 
 -----------------------------------------------------
 5) VERIFYING DATA IN MONGODB
