@@ -39,7 +39,7 @@ services:
     volumes:
       - ./data/mongo:/data/db
     ports:
-      - "27017:27017"
+      - "27018:27017"
     networks:
       - microservice_network
 

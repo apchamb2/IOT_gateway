@@ -6,3 +6,4 @@ pymongo==4.10.1
 six==1.17.0
 kafka-python-ng==2.2.3
 prometheus-fastapi-instrumentator
+prometheus-client

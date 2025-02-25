@@ -201,7 +201,7 @@ Access Prometheus at http://localhost:9090/targets and Grafana at http://localho
          - kubectl apply -f CRUDServiceDeployment.yml
          - kubectl apply -f GrafanaDeployment.yml
          - kubectl apply -f MongoDBDeployment.yml
-         - kubectl apply -f prometheus.yml
+         - kubectl apply -f prometheus-deployment.yml
          - kubectl apply -f gRPCServiceDeployment.yml
          - kubectl apply -f KafkaConsumerDeployment.yml
          - kubectl apply -f KafkaDeployment.yml
@@ -287,3 +287,27 @@ https://github.com/user-attachments/assets/21d2aeb3-f6ca-4632-90ed-a511e733b34e
 - kubectl delete pod -l app=crud-service
 - kubectl delete pod -l app=kafka
 - kubectl delete pod -l app=mongodb
+
+
+
+
+
+kubectl apply -f ZookeeperDeployment.yml
+kubectl apply -f CRUDServiceDeployment.yml
+kubectl apply -f GrafanaDeployment.yml
+kubectl apply -f MongoDBDeployment.yml
+kubectl apply -f gRPCServiceDeployment.yml
+kubectl apply -f KafkaConsumerDeployment.yml
+kubectl apply -f KafkaDeployment.yml
+kubectl apply -f HPAforCRUDService.yml
+kubectl apply -f gRPCService.yml
+kubectl apply -f prometheus-deployment.yml
+
+kubectl apply -f prometheus-pvc.yml
+kubectl apply -f mongo-pvc.yml
+kubectl apply -f kafka-pvc.yml
+kubectl apply -f gRPCServicePVC.yml
+kubectl apply -f gRPCClientPVC.yml
+kubectl apply -f grafana-pvc.yml
+kubectl apply -f zookeeper-pvc.yml
+
