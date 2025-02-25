@@ -24,7 +24,7 @@ def run():
     # Connect to the gRPC server
     # with grpc.insecure_channel("grpc-service:50051") as channel:
     # with grpc.insecure_channel("grpc-service.default.svc.cluster.local:50051") as channel:
-    channel = grpc.insecure_channel('grpc-service:50051')
+    channel = grpc.insecure_channel('grpc_service:50051')
     stub = sensor_pb2_grpc.SensorServiceStub(channel)
     
     # Simulate sending multiple sensor readings
