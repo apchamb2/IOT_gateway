@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-service  # Updated label to match the service name
+  template:
+    metadata:
+      labels:
+        app: grpc-service  # Updated label to match the service name
+    spec:
+      containers:
+      - name: grpc-service
+        image: haseebr26/iot_gateway-grpc_service:latest
+        ports:
+        - containerPort: 50051
+        env:
+        - name: KAFKA_BROKER
+          value: "kafka:9092"
+        volumeMounts:
+        - name: grpc-service-data
+          mountPath: /app/data # Adjust the path based on your application's requirements
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+      volumes:
+      - name: grpc-service-data
+        persistentVolumeClaim:
+          claimName: grpc-service-pvc

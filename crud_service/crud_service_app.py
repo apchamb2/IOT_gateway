@@ -1,17 +1,8 @@
-"""
-a FastAPI app that demonstrates create, read, update, and delete (CRUD) operations. 
-It’s “time-decoupled” because the CRUD service persists data to the MongoDB database 
-independently of when the sensor data arrives.
-http://localhost:8000/docs or http://127.0.0.1:8000/docs
-http://127.0.0.1:8000/metrics
-"""
-"""
-CRUD FastAPI service with Prometheus instrumentation using lifespan.
-"""
-
-import os, traceback
+import os
+import traceback
 from contextlib import asynccontextmanager
-import cProfile, pstats
+import cProfile
+import pstats
 from io import StringIO
 
 from fastapi import FastAPI, HTTPException, Request
@@ -23,48 +14,98 @@ from kafka.errors import KafkaError
 
 # Prometheus instrumentation
 from prometheus_fastapi_instrumentator import Instrumentator
-from prometheus_client import CollectorRegistry, Counter, REGISTRY
+from prometheus_client import (
+    CollectorRegistry,
+    Counter,
+    Gauge,
+    Histogram,
+    Summary,
+    generate_latest,
+)
 
+# Environment Variables
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongodb:27017/")
-KAFKA_BROKER = os.getenv("KAFKA_BROKER", "kafka:9092")
-
+# Lifecycle Management
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # If you have other startup/shutdown logic, keep it here
     print("=== LIFESPAN STARTUP ===")
     yield
     print("=== LIFESPAN SHUTDOWN ===")
 
-# Create the FastAPI app (with a lifespan if needed)
+# Create the FastAPI app
 app = FastAPI(lifespan=lifespan)
 
-# ----------------- PROMETHEUS INSTRUMENTATION -----------------------
-# Instrument the app BEFORE it starts, so we can add middleware safely
+# ----------------- PROMETHEUS CUSTOM METRICS -----------------------
+# Register custom metrics
+registry = CollectorRegistry(auto_describe=True)
+
+# Track Kafka message production
+kafka_messages_sent_total = Counter(
+    "kafka_messages_sent_total",
+    "Number of messages successfully sent to Kafka",
+    registry=registry,
+)
+
+# Track database query latency
+db_query_latency_seconds = Histogram(
+    "db_query_duration_seconds",
+    "MongoDB query duration in seconds",
+    ["operation"],
+    registry=registry,
+)
+
+# Track request size
+http_request_size_bytes = Summary(
+    "http_request_size_bytes",
+    "Content length of incoming requests",
+    registry=registry,
+)
+
+# Middleware for Prometheus Metrics
+@app.middleware("http")
+async def prometheus_middleware(request: Request, call_next):
+    method = request.method
+    endpoint = request.url.path
+
+    # Increment active requests gauge
+    ACTIVE_REQUESTS.inc()
+
+    # Track request size
+    if request.headers.get("Content-Length"):
+        http_request_size_bytes.observe(int(request.headers["Content-Length"]))
+
+    # Measure request latency
+    with REQUEST_LATENCY.labels(method=method, endpoint=endpoint).time():
+        response = await call_next(request)
+
+    # Decrement active requests gauge
+    ACTIVE_REQUESTS.dec()
+
+    # Increment request count
+    REQUEST_COUNT.labels(method=method, endpoint=endpoint).inc()
+
+    return response
+
+# Standard Prometheus Instrumentation
 Instrumentator().instrument(app).expose(
     app,
     include_in_schema=True,
     endpoint="/metrics",
 )
 
-# --------------- KAFKA + MONGODB SETUP ---------------
+# Expose Custom Metrics
+@app.get("/metrics/custom")
+async def custom_metrics():
+    """Exposes additional system-level metrics"""
+    return generate_latest(registry)
+
+# ----------------- KAFKA + MONGODB SETUP -----------------------
 producer = KafkaProducer(
-    bootstrap_servers='kafka:9092',
-    value_serializer=lambda v: v.encode('utf-8')
+    bootstrap_servers=KAFKA_BROKER,
+    value_serializer=lambda v: v.encode("utf-8"),
 )
-
-# Avoid duplicated metric on reload
-def get_kafka_messages_sent_metric():
-    for collector in list(REGISTRY._collector_to_names.keys()):
-        names = REGISTRY._collector_to_names[collector]
-        if "kafka_messages_sent_total" in names:
-            return collector
-    return Counter(
-        "kafka_messages_sent_total",
-        "Number of messages successfully sent to Kafka"
-    )
-
-kafka_messages_sent = get_kafka_messages_sent_metric()
 
 client = MongoClient(MONGO_URI)
 db = client["iot_db"]
@@ -74,21 +115,92 @@ def send_to_kafka(topic: str, message: str):
     try:
         future = producer.send(topic, value=message)
         record_metadata = future.get(timeout=10)
-        kafka_messages_sent.inc()
-        print(f"Message sent to topic: {record_metadata.topic}, "
-              f"partition: {record_metadata.partition}, offset: {record_metadata.offset}")
+        kafka_messages_sent_total.inc()  # Increment Kafka metric
+        print(
+            f"Message sent to topic: {record_metadata.topic}, "
+            f"partition: {record_metadata.partition}, offset: {record_metadata.offset}"
+        )
     except KafkaError as e:
         print(f"Failed to send message to Kafka due to KafkaError: {e}")
     except Exception as e:
         print(f"Unexpected error while sending to Kafka: {e}")
 
-# ----------------- DATA MODEL + MIDDLEWARE -----------------------
+# ----------------- DATA MODEL -----------------------
 class SensorData(BaseModel):
     device_id: str = Field(..., description="Unique device identifier")
     timestamp: str = Field(..., description="Timestamp in ISO format")
     temperature: float = Field(..., description="Temperature reading")
     humidity: float = Field(..., description="Humidity reading")
 
+# ----------------- CRUD ENDPOINTS -----------------------
+@app.post("/sensor/", response_model=dict)
+async def create_sensor_data(data: SensorData):
+    # Start profiling
+    pr = cProfile.Profile()
+    pr.enable()
+
+    sensor_dict = data.dict()
+
+    # Track Kafka message production
+    send_to_kafka("workflow-events", data.json())
+
+    # Track database insert operation
+    with db_query_latency_seconds.labels(operation="insert").time():
+        result = collection.insert_one(sensor_dict)
+
+    # Stop profiling
+    pr.disable()
+    s = StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats("cumulative")
+    ps.print_stats()
+    print(s.getvalue())  # Print profiling results to logs
+
+    if result.inserted_id:
+        return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
+    raise HTTPException(status_code=500, detail="Error inserting data")
+
+@app.get("/sensor/{device_id}", response_model=list)
+async def get_sensor_data(device_id: str):
+    # Track database find operation
+    with db_query_latency_seconds.labels(operation="find").time():
+        documents = list(collection.find({"device_id": device_id}, {"_id": 0}))
+
+    if not documents:
+        raise HTTPException(status_code=404, detail="No data found for this device")
+    return documents
+
+@app.put("/sensor/{device_id}", response_model=dict)
+async def update_sensor_data(device_id: str, data: SensorData):
+    update_filter = {"device_id": device_id, "timestamp": data.timestamp}
+    new_values = {"$set": data.dict()}
+
+    # Track database update operation
+    with db_query_latency_seconds.labels(operation="update").time():
+        result = collection.update_one(update_filter, new_values)
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="No matching record to update")
+
+    # Track Kafka message production
+    send_to_kafka("workflow-events", data.json())
+    return {"message": "Data updated successfully"}
+
+@app.delete("/sensor/{device_id}", response_model=dict)
+async def delete_sensor_data(device_id: str, timestamp: Optional[str] = None):
+    delete_filter = {"device_id": device_id} if not timestamp else {"device_id": device_id, "timestamp": timestamp}
+
+    # Track database delete operation
+    with db_query_latency_seconds.labels(operation="delete").time():
+        result = collection.delete_many(delete_filter)
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="No matching data found to delete")
+
+    # Track Kafka message production
+    send_to_kafka("workflow-events", str(delete_filter))
+    return {"message": f"Deleted {result.deleted_count} record(s)"}
+
+# Middleware for Error Logging
 @app.middleware("http")
 async def kafka_error_middleware(request: Request, call_next):
     try:
@@ -99,77 +211,34 @@ async def kafka_error_middleware(request: Request, call_next):
             "path": request.url.path,
             "method": request.method,
             "error": str(exc),
-            "traceback": traceback.format_exc()
+            "traceback": traceback.format_exc(),
         }
-        send_to_kafka('error-events', str(error_details))
+
+        # Log errors to Kafka
+        send_to_kafka("error-events", str(error_details))
         raise
 
-# ----------------- CRUD ENDPOINTS -----------------------
-# @app.post("/sensor/", response_model=dict)
-# async def create_sensor_data(data: SensorData):
-#     sensor_dict = data.dict()
-#     send_to_kafka('workflow-events', data.json())
-#     result = collection.insert_one(sensor_dict)
-#     if result.inserted_id:
-#         return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
-#     raise HTTPException(status_code=500, detail="Error inserting data")
+# ----------------- PROMETHEUS GLOBAL METRICS -----------------------
+# Define global metrics for HTTP requests
+REQUEST_COUNT = Counter(
+    "http_requests_total", "Total number of HTTP requests", ["method", "endpoint"], registry=registry
+)
 
-@app.post("/sensor/", response_model=dict)
-async def create_sensor_data(data: SensorData):
-    # Start profiling
-    pr = cProfile.Profile()
-    pr.enable()
+REQUEST_LATENCY = Histogram(
+    "http_request_duration_seconds", "Request latency in seconds", ["method", "endpoint"], registry=registry
+)
 
-    sensor_dict = data.dict()
-    send_to_kafka('workflow-events', data.json())
-    result = collection.insert_one(sensor_dict)
+ACTIVE_REQUESTS = Gauge(
+    "http_active_requests", "Number of active HTTP requests", registry=registry
+)
 
-    # Stop profiling
-    pr.disable()
-    s = StringIO()
-    ps = pstats.Stats(pr, stream=s).sort_stats('cumulative')
-    ps.print_stats()
-    print(s.getvalue())  # Print profiling results to logs
-
-    if result.inserted_id:
-        return {"message": "Data inserted successfully", "id": str(result.inserted_id)}
-    raise HTTPException(status_code=500, detail="Error inserting data")
-
-
-@app.get("/sensor/{device_id}", response_model=list)
-async def get_sensor_data(device_id: str):
-    documents = list(collection.find({"device_id": device_id}, {"_id": 0}))
-    if not documents:
-        raise HTTPException(status_code=404, detail="No data found for this device")
-    return documents
-
-@app.put("/sensor/{device_id}", response_model=dict)
-async def update_sensor_data(device_id: str, data: SensorData):
-    update_filter = {"device_id": device_id, "timestamp": data.timestamp}
-    new_values = {"$set": data.dict()}
-    result = collection.update_one(update_filter, new_values)
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="No matching record to update")
-    send_to_kafka('workflow-events', data.json())
-    return {"message": "Data updated successfully"}
-
-@app.delete("/sensor/{device_id}", response_model=dict)
-async def delete_sensor_data(device_id: str, timestamp: Optional[str] = None):
-    if timestamp:
-        delete_filter = {"device_id": device_id, "timestamp": timestamp}
-    else:
-        delete_filter = {"device_id": device_id}
-    result = collection.delete_many(delete_filter)
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="No matching data found to delete")
-    send_to_kafka('workflow-events', str(delete_filter))
-    return {"message": f"Deleted {result.deleted_count} record(s)"}
-
+# ----------------- RUN THE APP -----------------------
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "crud_service_app:app",
-        host="0.0.0.0", # Changed from 127.0.0.1 to allow external access inside Docker
+        host="0.0.0.0",  # Allow external access inside Docker
         port=8000,
-        reload=True,  # for dev auto-reload
+        reload=True,
     )

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-client
+  template:
+    metadata:
+      labels:
+        app: grpc-client
+    spec:
+      containers:
+      - name: grpc-client
+        image: haseebr26/iot_gateway_grpc_client:latest
+        env:
+        - name: KAFKA_BROKER
+          value: "kafka:9092"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+        volumeMounts:
+        - name: grpc-client-data
+          mountPath: /app/data
+      volumes:
+      - name: grpc-client-data
+        persistentVolumeClaim:
+          claimName: grpc-client-pvc

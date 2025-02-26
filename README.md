@@ -64,8 +64,6 @@ CONTENTS:
        kafka-topics --list --bootstrap-server localhost:9092
    - Install JDK:
        brew install openjdk
-   - Install Confluent Kafka Python Package:
-       pip install confluent-kafka
 
     KAFKA SETUP (Windows)
    - Start Zookeeper
@@ -116,7 +114,7 @@ docker-compose logs -f           # Follow logs to ensure services are running
    The client sends multiple data points to the gRPC server and kafka consumer,
    which in turn stores them in MongoDB. The client uses an OpenAI API to get insights on anomalous data detected.
 
-   ![alt text](testingImages\GPT%API%(1).png)
+![alt text](/testingImages/GPT_API.png)
 
 -----------------------------------------------------
 5) VERIFYING DATA IN MONGODB
@@ -153,40 +151,163 @@ B) MONGO SHELL (OPTIONAL):
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
 
 
-## Profiling 
+
+![alt text](/testingImages/SystemDiagram.png)
 
 
-1. Installation 
-   - pip install py-spy
-
-   - mac user
-   - brew install py-spy
-
-   Ensure py-spy is Installed Inside the Container
-
-   - docker exec -it <container_id> /bin/sh
-   - which py-spy
-   - pip install py-spy
-
-   - docker ps  (to get the container id of curd_services container)
-
-   - docker exec -it 45828d5937a5 py-spy top --pid 1
-
-2. Attach py-spy to the container:
-
-   - docker exec -it <container_name_or_id> py-spy top --pid 1
-   - Replace <container_name_or_id> with the actual container name (e.g., crud_service).
-
-3. To generate a flame graph for deeper analysis:
-
-   - docker exec -it <container_name_or_id> py-spy record -o profile.svg --pid 1 ( optional)
-   This will create an SVG file (profile.svg) showing a visual representation of where the CPU time is being spent.
-   Open the profile.svg file in a browser to analyze the results.
-
-   ![alt text](testingImages/image.png)
 
 
-## Load Testing
-- pip install locust
+## Module 5: Performance Optimization
 
-- locust -f locustfile.py --host=http://localhost:8000
+## Prerequisites
+- Docker installed.
+- Kubernetes cluster ( Minikube and Kind).
+- Python and pip installed for local development.
+
+## Steps to Reproduce
+
+- docker exec -it <crud-service-pod> py-spy top --pid 1
+Set Up Monitoring and apply Prometheus and Grafana configurations:
+
+- kubectl apply -f prometheus.yml
+- kubectl apply -f grafana.yml
+Forward Prometheus and Grafana ports:
+
+kubectl port-forward svc/prometheus 9090:9090
+kubectl port-forward svc/grafana 3000:3000
+Access Prometheus at http://localhost:9090/targets and Grafana at http://localhost:3000.
+
+
+## Run Load Testing :
+- Install Locust:
+   - pip install locust
+   - locust -f locustfile.py --host=http://localhost:8000
+   - Open the Locust web interface at http://localhost:8089 to configure and start the test.
+
+![alt text](testingImages/image.png)
+
+
+## Module 6: Elasticity and Scalability
+
+- Prerequisites
+   - Kubernetes cluster (e.g., Minikube or Kind).
+   - kubectl configured to interact with the cluster.
+   - All Docker images pushed to a container registry (e.g., Docker Hub).
+   - Steps to Reproduce
+      - Apply Kubernetes Manifests :
+      - Deploy all services using the provided YAML files:
+
+         - kubectl apply -f ZookeeperDeployment.yml
+         - kubectl apply -f CRUDServiceDeployment.yml
+         - kubectl apply -f GrafanaDeployment.yml
+         - kubectl apply -f MongoDBDeployment.yml
+         - kubectl apply -f prometheus-deployment.yml
+         - kubectl apply -f gRPCServiceDeployment.yml
+         - kubectl apply -f KafkaConsumerDeployment.yml
+         - kubectl apply -f KafkaDeployment.yml
+         - kubectl apply -f HPAforCRUDService.yml
+         - kubectl apply -f gRPCService.yml
+
+   - Verify Pods and Services :
+      - kubectl get pods
+   - Check service status:
+      - kubectl get svc
+
+   - Test Horizontal Pod Autoscaling (HPA) :
+      Verify HPA configuration:
+      - kubectl get hpa
+      - kubectl describe hpa crud-service-hpa
+
+   - Simulate traffic using Locust:
+
+      - locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
+   Observe scaling behavior:
+
+      - kubectl get pods -l app=crud-service --watch
+   - Access Monitoring Tools :
+   Forward Prometheus and Grafana ports:
+
+      - kubectl port-forward svc/prometheus 9090:9090
+      - kubectl port-forward svc/grafana 3000:3000
+      - Access Prometheus at http://localhost:9090/targets and Grafana at http://localhost:3000.
+
+   - Test Fault Tolerance :
+      - kubectl delete pod -l app=crud-service
+      - kubectl delete pod -l app=kafka
+      - kubectl delete pod -l app=mongodb
+
+   - Verify recovery:
+      - kubectl get pods --watch
+
+   - Optional: Test DNS Resolution :
+   From the Prometheus pod:
+      - kubectl exec -it <prometheus-pod> -- nslookup crud-service
+   From any pod:
+      - kubectl exec -it <any-pod> -- curl http://crud-service:8000/metrics
+
+
+## Note: 
+Ensure all Docker images are built and pushed to a registry before deploying:
+
+- docker build -t <your-dockerhub-username>/iot_gateway-<service-name>:latest -f Dockerfile.<service-name> .
+- docker push <your-dockerhub-username>/iot_gateway-<service-name>:latest
+
+- If using Minikube, ensure the Metrics Server is installed for HPA:
+   - minikube addons enable metrics-server
+
+For 
+# Step 1: Deploy all services
+- kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service
+
+- kubectl get pods -n kube-system | grep metrics-server
+
+## Make the script executable:
+- chmod +x apply-all.sh
+## Run the script:
+- ./apply-all.sh
+
+# Step 2: Verify deployment
+- kubectl get pods
+- kubectl get svc
+
+# Step 3: Test HPA
+- kubectl get hpa
+- kubectl describe hpa crud-service-hpa
+
+# Step 4: Access monitoring tools
+- kubectl port-forward svc/prometheus 9090:9090
+- kubectl port-forward svc/grafana 3000:3000
+
+# Step 5: Run load testing
+- locust -f locustfile.py --host=http://<your-crud-service-ip>:8000
+  
+https://github.com/user-attachments/assets/21d2aeb3-f6ca-4632-90ed-a511e733b34e
+
+# Step 6: Simulate failures
+- kubectl delete pod -l app=crud-service
+- kubectl delete pod -l app=kafka
+- kubectl delete pod -l app=mongodb
+
+
+
+
+
+kubectl apply -f ZookeeperDeployment.yml
+kubectl apply -f CRUDServiceDeployment.yml
+kubectl apply -f GrafanaDeployment.yml
+kubectl apply -f MongoDBDeployment.yml
+kubectl apply -f gRPCServiceDeployment.yml
+kubectl apply -f KafkaConsumerDeployment.yml
+kubectl apply -f KafkaDeployment.yml
+kubectl apply -f HPAforCRUDService.yml
+kubectl apply -f gRPCService.yml
+kubectl apply -f prometheus-deployment.yml
+
+kubectl apply -f prometheus-pvc.yml
+kubectl apply -f mongo-pvc.yml
+kubectl apply -f kafka-pvc.yml
+kubectl apply -f gRPCServicePVC.yml
+kubectl apply -f gRPCClientPVC.yml
+kubectl apply -f grafana-pvc.yml
+kubectl apply -f zookeeper-pvc.yml
+
