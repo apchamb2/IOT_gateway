@@ -1,11 +1,15 @@
 """
 A gRPC server that receives sensor data from gRPC clients and stores it in MongoDB.
 """
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import grpc, json
 from concurrent import futures
-import grpc_service.sensor_pb2 as sensor_pb2
-import grpc_service.sensor_pb2_grpc as sensor_pb2_grpc
+from . import sensor_pb2 as sensor_pb2
+from . import sensor_pb2_grpc as sensor_pb2_grpc
 
 # MongoDB driver
 from pymongo import MongoClient

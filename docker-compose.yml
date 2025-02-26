@@ -18,6 +18,7 @@ services:
     container_name: kafka
     depends_on:
       - zookeeper
+    restart: unless-stopped
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -36,10 +37,11 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
+    restart: unless-stopped
     volumes:
       - ./data/mongo:/data/db
     ports:
-      - "27018:27017"
+      - "27017:27017"
     networks:
       - microservice_network
 
@@ -51,6 +53,7 @@ services:
     depends_on:
       - mongodb
       - kafka
+    restart: unless-stopped
     environment:
       - MONGO_URI=mongodb://mongodb:27017/
       - KAFKA_BROKER=kafka:9092
@@ -67,6 +70,7 @@ services:
     container_name: grpc_service
     depends_on:
       - kafka
+    restart: unless-stopped
     ports:
       - "50051:50051"
     command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "-m", "grpc_service.server"]
@@ -79,6 +83,7 @@ services:
       dockerfile: Dockerfile.client
     depends_on:
       - grpc_service
+    restart: unless-stopped
     command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/grpc_client/client.py"]
     networks:
       - microservice_network
@@ -111,9 +116,9 @@ services:
     container_name: grafana
     environment:
     - GF_SECURITY_ADMIN_USER=admin
-    - GF_SECURITY_ADMIN_PASSWORD=beano.1man
+    - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       - prometheus
     networks:

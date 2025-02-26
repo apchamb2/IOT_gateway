@@ -1,6 +1,7 @@
 FROM python:3.10-slim
 
 WORKDIR /app
+ENV PYTHONPATH=/app/grpc_service:/app
 
 COPY grpc_client/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
