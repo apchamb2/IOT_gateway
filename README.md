@@ -149,7 +149,11 @@ B) MONGO SHELL (OPTIONAL):
    - Check the server logs for any errors during insertion.
 
 4. For Kafka, we need to install Kafka-python-ng otherwise, it shows a module not found error.
-
+5. If issues found in mongodb logs then follow the steps below:
+   - Go to Mongo shell. Run in terminal -> docker exec -it mongodb mongosh
+   - Run the Following in Mongo Shell -> rs.initiate()
+   - Run the Following in Mongo Shell to check the status -> rs.status()
+   - These will run the Replication MongoDB instance
 
 
 ![alt text](/testingImages/SystemDiagram.png)

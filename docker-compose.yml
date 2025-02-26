@@ -38,12 +38,24 @@ services:
     image: mongo:latest
     container_name: mongodb
     restart: unless-stopped
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - ./data/mongo:/data/db
     ports:
       - "27017:27017"
     networks:
       - microservice_network
+
+  etcd:
+    image: bitnami/etcd:latest
+    container_name: etcd
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+    ports:
+      - "2379:2379"
+    networks:
+      - microservice_network
+    
 
   crud_service:
     build:
