@@ -14,8 +14,6 @@ from datetime import datetime, timezone
 from openai import OpenAI  # Import the OpenAI API client
 
 
-
-
 # =============================================================================
 # OpenAI API Configuration
 # =============================================================================
