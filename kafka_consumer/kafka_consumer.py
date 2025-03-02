@@ -1,3 +1,5 @@
+# Could implement gpt explanation at this point rather than at the client
+
 import os
 from kafka import KafkaConsumer
 import time
@@ -21,3 +23,4 @@ def consume_messages():
 
 if __name__ == '__main__':
     consume_messages()
+
