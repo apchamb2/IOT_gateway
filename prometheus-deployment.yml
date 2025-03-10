@@ -54,4 +54,4 @@ data:
           - targets: ["localhost:9090"]
       - job_name: "crud-service"
         static_configs:
-          - targets: ["crud_service:8000"]
+          - targets: ["crud-service:8000"]

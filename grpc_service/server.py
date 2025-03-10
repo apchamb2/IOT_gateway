@@ -8,8 +8,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import grpc, json
 from concurrent import futures
-from . import sensor_pb2 as sensor_pb2
-from . import sensor_pb2_grpc as sensor_pb2_grpc
+import sensor_pb2 
+import sensor_pb2_grpc
 
 # MongoDB driver
 from pymongo import MongoClient

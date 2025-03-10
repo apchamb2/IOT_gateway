@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import sensor_pb2 as sensor__pb2
+import sensor_pb2
 
 GRPC_GENERATED_VERSION = '1.69.0'
 GRPC_VERSION = grpc.__version__
@@ -37,8 +37,8 @@ class SensorServiceStub(object):
         """
         self.SendSensorData = channel.unary_unary(
                 '/sensor.SensorService/SendSensorData',
-                request_serializer=sensor__pb2.SensorData.SerializeToString,
-                response_deserializer=sensor__pb2.SensorAck.FromString,
+                request_serializer=sensor_pb2.SensorData.SerializeToString,
+                response_deserializer=sensor_pb2.SensorAck.FromString,
                 _registered_method=True)
 
 
@@ -58,8 +58,8 @@ def add_SensorServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SendSensorData': grpc.unary_unary_rpc_method_handler(
                     servicer.SendSensorData,
-                    request_deserializer=sensor__pb2.SensorData.FromString,
-                    response_serializer=sensor__pb2.SensorAck.SerializeToString,
+                    request_deserializer=sensor_pb2.SensorData.FromString,
+                    response_serializer=sensor_pb2.SensorAck.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -88,8 +88,8 @@ class SensorService(object):
             request,
             target,
             '/sensor.SensorService/SendSensorData',
-            sensor__pb2.SensorData.SerializeToString,
-            sensor__pb2.SensorAck.FromString,
+            sensor_pb2.SensorData.SerializeToString,
+            sensor_pb2.SensorAck.FromString,
             options,
             channel_credentials,
             insecure,

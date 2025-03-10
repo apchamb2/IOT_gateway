@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: crud-service
-        image: haseebr26/iot_gateway-crud_service:latest
+        image: haseebr26/crud-service:latest
         ports:
         - containerPort: 8000 # Ensure this matches the port where the app runs
         env:

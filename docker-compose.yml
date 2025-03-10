@@ -45,7 +45,8 @@ services:
       - "27017:27017"
     networks:
       - microservice_network
-
+  
+  
   etcd:
     image: bitnami/etcd:latest
     container_name: etcd
@@ -75,11 +76,11 @@ services:
     networks:
       - microservice_network
 
-  grpc_service:
+  grpc-service:
     build:
       context: .
       dockerfile: Dockerfile.grpc
-    container_name: grpc_service
+    container_name: grpc-service
     depends_on:
       - kafka
     restart: unless-stopped
@@ -89,12 +90,13 @@ services:
     networks:
       - microservice_network
 
-  grpc_client:
+  grpc-client:
     build:
       context: .
       dockerfile: Dockerfile.client
+    container_name: grpc-client
     depends_on:
-      - grpc_service
+      - grpc-service
     restart: unless-stopped
     command: ["/usr/local/bin/wait-for-it.sh", "kafka:9092", "--", "python", "/app/grpc_client/client.py"]
     networks:

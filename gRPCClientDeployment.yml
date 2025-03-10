@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: grpc-client
-        image: haseebr26/iot_gateway_grpc_client:latest
+        image: haseebr26/grpc-client:latest
         env:
         - name: KAFKA_BROKER
           value: "kafka:9092"

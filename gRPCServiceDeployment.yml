@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: grpc-service
-        image: haseebr26/iot_gateway-grpc_service:latest
+        image: haseebr26/grpc-service:latest
         ports:
         - containerPort: 50051
         env:

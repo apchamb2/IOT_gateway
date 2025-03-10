@@ -260,6 +260,9 @@ Ensure all Docker images are built and pushed to a registry before deploying:
    - minikube addons enable metrics-server
 
 For 
+- kind create cluster
+- minikube start
+
 # Step 1: Deploy all services
 - kubectl exec -it prometheus-669ffdb99b-xs7hc -- nslookup crud-service
 
@@ -306,6 +309,7 @@ kubectl apply -f KafkaDeployment.yml
 kubectl apply -f HPAforCRUDService.yml
 kubectl apply -f gRPCService.yml
 kubectl apply -f prometheus-deployment.yml
+kubectl apply -f prometheus.yml
 
 kubectl apply -f prometheus-pvc.yml
 kubectl apply -f mongo-pvc.yml
@@ -315,3 +319,27 @@ kubectl apply -f gRPCClientPVC.yml
 kubectl apply -f grafana-pvc.yml
 kubectl apply -f zookeeper-pvc.yml
 
+
+
+
+- docker build -t haseebr26/iot_gateway_grpc_client:latest -f Dockerfile.client .
+- docker push haseebr26/iot_gateway_grpc_client:latest
+
+
+
+
+# For CRUD Service
+docker build -t haseebr26/iot_gateway-crud_service:latest -f Dockerfile.crud .
+docker push haseebr26/iot_gateway-crud_service:latest
+
+# For gRPC Service
+docker build -t haseebr26/iot_gateway-grpc-service:latest -f Dockerfile.grpc .
+docker push haseebr26/iot_gateway-grpc-service:latest
+
+# For gRPC Client
+docker build -t haseebr26/iot_gateway-grpc-client:latest -f Dockerfile.client .
+docker push haseebr26/iot_gateway-grpc-client:latest
+
+# For Kafka Consumer
+docker build -t haseebr26/iot_gateway-kafka_consumer:latest -f Dockerfile.consumer .
+docker push haseebr26/iot_gateway-kafka_consumer:latest
